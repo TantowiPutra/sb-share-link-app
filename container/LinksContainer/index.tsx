@@ -1,12 +1,20 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
 import {
   Card,
   CardContent,
   CardDescription,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+
+import { useState } from "react"
 
 type Link = {
     id: number
@@ -22,7 +30,23 @@ type dataLink = {
     data   : Link[];
 }
 
-export default function LinksContainer({ dataLinks: data, error: error, isLoading: isLoading }: {dataLinks: dataLink; error: object; isLoading: boolean;}) {        
+export default function LinksContainer({ dataLinks: data, error: error, isLoading: isLoading, onFinished }: {dataLinks: dataLink; error: object; isLoading: boolean; onFinished: () => void}) {  
+    const[deletedId, setDeletedId] = useState<number | null>(null);
+
+    const handleDelete = async (id: number) => {
+        const response = await fetch(`/api/links/delete/${id}`, {
+            method: "DELETE"
+        })
+
+        if(response.ok) {
+            alert("Berhasil Delete Link");
+        } else {
+            alert("Gagal Delete Link");
+        }
+
+        onFinished?.();
+    };
+    
     return (
       <>
         <div className="links-wrapper grid grid-1 gap-4 mt-3">
@@ -38,7 +62,20 @@ export default function LinksContainer({ dataLinks: data, error: error, isLoadin
                               <CardTitle>Actions</CardTitle>
                               <div className="buttons flex gap-3">
                                   <Button size="sm" variant="default">Edit</Button>
-                                  <Button size="sm" variant="destructive">Delete</Button>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="default" size="sm" onClick={() => setDeletedId(data.id)}>Delete</Button>
+                                        </PopoverTrigger>
+                                        {
+                                            deletedId == data.id &&
+                                            <PopoverContent className="w-80">
+                                                <div className="grid flex flex-col items-center justify-center gap-4">
+                                                    <p>Apakah anda yakin untuk delete link ini?</p>
+                                                    <Button variant="destructive" size="sm" onClick={() => handleDelete(data.id)}>Ya</Button>
+                                                </div>
+                                            </PopoverContent>
+                                        }
+                                    </Popover>
                               </div>
                           </div>
                           

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import useFormAction from "@/hooks/useFormAction"
 import { formType } from "@/hooks/useFormAction";
 import { Button } from "@/components/ui/button";
-import { createLink, updateLink, deleteLink } from "@/app/server/action";
+import { createLink, updateLink } from "@/app/server/action";
 import { useEffect } from "react";
 
 type FormState = {
@@ -41,20 +41,22 @@ export default function FormContainer({id, values, onFinished} : {
 }) {
     const { form }              = useFormAction({values});
     const [Loading, setLoading] = useState<boolean>(false);
-    const [state, formAction] = useActionState<FormState>(createLink, initialState);
+    const [state, formAction]   = useActionState<FormState, FormData>(createLink, initialState);
 
     useEffect(() => {
         if (state?.isSuccess === true) {
             // Success logic
             setLoading(false);
+            alert("Berhasil Submit Link Baru!");
             onFinished?.();
-            alert("berhasil Submit Link Baru!");
             form.reset();
         }
 
         if (state?.isSuccess === false) {
-            alert("Gagal Submit Link Baru...");
             setLoading(false);
+            onFinished?.();
+            alert("Gagal Submit Link Baru...");
+            form.reset();
         }
     }, [state]);
 

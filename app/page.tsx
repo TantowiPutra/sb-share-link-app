@@ -12,7 +12,7 @@ import FormContainer from "@/container/FormContainer/index"
 
 import useSWR from "swr"
 
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
+const fetcher = (...args: Parameters<typeof fetch>) => fetch(...args).then((res) => res.json());
 
 export default function Home() {
     const { data, error, isLoading, mutate } = useSWR("/api/links", fetcher, {
@@ -33,6 +33,9 @@ export default function Home() {
                     dataLinks={data}
                     error={error}
                     isLoading={isLoading}
+                    onFinished = {() => {
+                        mutate();
+                    }}
                 />
             </div>
 

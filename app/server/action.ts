@@ -1,9 +1,17 @@
 'use server'
 
-import { revalidatePath } from "next/cache"
 import { z } from 'zod'
 import { linksTable } from "@/lib/db/schema"
 import { db } from "@/lib/db"
+
+type FormState = {
+  message?: string;
+  errors?: {
+    title?: string;
+    url?: string;
+  };
+  isSuccess?: boolean | null;
+};
 
 type FieldErrors = {
   [key: string]: string[]
@@ -16,7 +24,7 @@ export async function createLink(
         isSuccess?: boolean | null
     },
     formData: FormData,
-) {
+): Promise<FormState> {
     const formSchema = z.object({
         title: z.string().min(1, 'Title Wajib Diisi(Server Action)!'),
         url : z.string().min(1, 'URL Wajib Diisi(Server Action)!'),
@@ -40,8 +48,6 @@ export async function createLink(
             isSuccess: false
         }
     }
-
-    console.log(parse);
 
     try {
         const data = await db.insert(linksTable)
