@@ -5,3 +5,8 @@ List of Dependencies:
 - Tailwind      : Utility-first CSS framework
 - Zod           : Typescript Schema Declaration & Validation Library
 - Drizzle ORM   : ORM to manage table migrations & simplified database query
+- Neon          : Serverless PostgreSQL Database
+- Zustrand      : Global State Management
+
+Dependencies Usage:
+- SWR : Mainly used for Client-Side data fetching, allowing client-side to easily revalidate (mutation) links list after CRUD process. 

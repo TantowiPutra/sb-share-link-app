@@ -28,7 +28,7 @@ export default function RootLayout({
         </Head>
         <body>
           <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white ${geistSans.variable} antialiased`}>
-              <header className="w-full bg-white dark:bg-gray-800 shadow-md p-4">
+              <header className="w-full bg-white dark:bg-gray-800 shadow-md p-4 sticky top-0">
                   <div className="container mx-auto flex justify-between items-center">
                       <h1 className="text-xl font-bold">
                           ShareLink

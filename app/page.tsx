@@ -1,66 +1,53 @@
 "use client"
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card"
+  Drawer,
+  DrawerContent
+} from "@/components/ui/drawer"
+
 import { Button } from "@/components/ui/button"
+import LinksContainer from "@/container/LinksContainer"
+import { useState } from "react"
+import FormContainer from "@/container/FormContainer/index"
 
 import useSWR from "swr"
-
-type Link = {
-    id: number
-    title: string
-    url: string
-    email: string
-    created_at: string
-    updated_at: string
-}
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 export default function Home() {
-    const { data: dataLinks, error, isLoading, mutate } = useSWR("/api/links", fetcher);
+    const { data, error, isLoading, mutate } = useSWR("/api/links", fetcher, {
+        refreshInterval: 10000
+    });
 
-    console.log(dataLinks);
+    const [showCreate, setShowCreate] = useState<boolean>(false);
 
     return (
-        <div className="container mx-auto">
-            <div className="links-wrapper grid grid-1 gap-4">
-                {
-                    isLoading ? "Loading..." : 
-                    dataLinks?.data.map((data: Link) => 
-                        <Card key={data.id}>
-                            <CardContent>
-                                <div className="action-wrapper flex gap-4 flex-col justify-start items-start">
-                                    <CardTitle>Actions</CardTitle>
-                                    <div className="buttons flex gap-3">
-                                        <Button size="sm" variant="default">Edit</Button>
-                                        <Button size="sm" variant="destructive">Delete</Button>
-                                    </div>
-                                </div>
-                                
-                                <div className="card-title mt-5">
-                                    <CardTitle>Link Title</CardTitle>
-                                    <CardDescription>{data.title}</CardDescription>
-                                </div>
+        <>
+            <div className="container mx-auto">
+                <div className="user-info flex items-center justify-between">
+                    <h1 className="font-bold text-3xl">Hi, {`Tantowi`}</h1>
+                    <Button onClick={() => setShowCreate(true)}>+ Add Link</Button>
+                </div>
 
-                                <div className="card-description mt-5">
-                                    <CardTitle>Link URL</CardTitle>
-                                    <CardDescription>{data.url}</CardDescription>
-                                </div>
-
-                               <div className="card-owner mt-5">
-                                    <CardTitle>Link Owner</CardTitle>
-                                    <CardDescription>{data.email}</CardDescription>
-                               </div>
-                            </CardContent>
-                        </Card>
-                    )
-                }
+                <LinksContainer 
+                    dataLinks={data}
+                    error={error}
+                    isLoading={isLoading}
+                />
             </div>
-        </div>
+
+            <Drawer open={showCreate} onOpenChange={setShowCreate}>
+                <DrawerContent>
+                    <div className="container mx-auto p-4">
+                        <FormContainer onFinished={
+                            () => {
+                                setShowCreate(false);
+                                mutate();
+                            }
+                        }/>
+                    </div>
+                </DrawerContent>
+            </Drawer>
+        </>
     );
 }
