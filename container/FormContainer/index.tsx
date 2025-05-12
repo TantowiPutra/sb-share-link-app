@@ -21,7 +21,7 @@ import { useEffect } from "react";
 type FormState = {
   message?: string;
   errors?: {
-    id?: number;
+    id? :string | number;
     title?: string;
     url?: string;
   };

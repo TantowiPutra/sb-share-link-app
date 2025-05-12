@@ -17,7 +17,7 @@ import useSWR from "swr"
 
 const fetcher = (...args: Parameters<typeof fetch>) => fetch(...args).then((res) => res.json());
 
-export function Home() {
+function Home() {
     const { data: session, status } = useSession()
     const router = useRouter()
 

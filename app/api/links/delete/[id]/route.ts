@@ -28,6 +28,8 @@ export async function DELETE(
             status: 200
         });
     } catch (error) {
+        console.log(error)
+
         return NextResponse.json(
         {
             message: "Delete Link Failed",

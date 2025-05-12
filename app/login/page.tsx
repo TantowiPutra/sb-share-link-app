@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 
 function LoginContent() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
 
   useEffect(() => {

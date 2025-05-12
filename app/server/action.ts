@@ -4,13 +4,13 @@ import { z } from 'zod'
 import { linksTable } from "@/lib/db/schema"
 import { db } from "@/lib/db"
 import { sql,eq } from "drizzle-orm";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth';
 import { getServerSession } from "next-auth";
 
 type FormState = {
   message?: string;
   errors?: {
-    id? :string;
+    id? :string | number;
     title?: string;
     url?: string;
   };
@@ -68,19 +68,21 @@ export async function createLink(
     }
 
     try {
-        const data = await db.insert(linksTable)
-                             .values({
-                                title: parse!.data!.title as string,
-                                email: session!.user!.email as string,
-                                url  : parse!.data!.url as string
-                             })
-                             .returning({ insertedId: linksTable.id });
+        await db.insert(linksTable)
+                .values({
+                title: parse!.data!.title as string,
+                email: session!.user!.email as string,
+                url  : parse!.data!.url as string
+                })
+                .returning({ insertedId: linksTable.id });
 
         return {
             message: "Sukses Insert Data!",
             isSuccess: true,
         }
     } catch(error) {
+        console.log(error)
+
         return {
             message: "Insert Gagal",
             isSuccess: false,
@@ -120,8 +122,6 @@ export async function updateLink(
             return acc
         }, {} as Record<string, string>)
 
-        console.log(errors)
-
         return { 
             errors : errors,
             isSuccess: false
@@ -129,20 +129,22 @@ export async function updateLink(
     }
 
     try {
-        const data = await db.update(linksTable)
-                             .set({
-                                title: parse.data.title,
-                                url  : parse.data.url,
-                                updated_at: sql`NOW()`
-                             })
-                             .where(eq(linksTable.id, Number(parse.data.id)))
-                             .returning({ updatedId: linksTable.id });
+        await db.update(linksTable)
+                .set({
+                title: parse.data.title,
+                url  : parse.data.url,
+                updated_at: sql`NOW()`
+                })
+                .where(eq(linksTable.id, Number(parse.data.id)))
+                .returning({ updatedId: linksTable.id });
 
         return {
             message: "Sukses Update Data!",
             isSuccess: true,
         }
     } catch(error) {
+        console.log(error);
+
         return {
             message: "Insert Gagal",
             isSuccess: false,

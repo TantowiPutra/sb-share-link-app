@@ -2,22 +2,22 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { linksTable } from "@/lib/db/schema";
 import { isNull, desc, and, eq } from 'drizzle-orm'
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-export async function GET(req: Request) {
+export async function GET() {
     // TRY CATCH BLOCK KETIKA FETCH DATA GAGAL
     try {
         const session = await getServerSession(authOptions);
     
         if (!session) {
-            return {
+            return NextResponse.json({
                 message: "Unauthorized",
                 isSuccess: false,
                 errors: {
                     title: "",
                     url: "",
                 }
-            };
+            });
         }
 
         const linksData = await db.select()
