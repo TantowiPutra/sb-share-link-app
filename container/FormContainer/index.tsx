@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Form,
   FormField,
@@ -19,6 +21,7 @@ import { useEffect } from "react";
 type FormState = {
   message?: string;
   errors?: {
+    id?: number;
     title?: string;
     url?: string;
   };
@@ -28,42 +31,60 @@ type FormState = {
 const initialState: FormState = {
   message: '',
   errors: {
+    id: 0,
     title: '',
     url  : '',
   },
   isSuccess: null,
 }
 
-export default function FormContainer({id, values, onFinished} : {
-    id? : number; 
+export default function FormContainer({id, Loading, setLoading, values, onFinished} : {
+    id? : number;
+    Loading?: boolean;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     values ?: formType;
     onFinished ?: () => void;
 }) {
-    const { form }              = useFormAction({values});
-    const [Loading, setLoading] = useState<boolean>(false);
-    const [state, formAction]   = useActionState<FormState, FormData>(createLink, initialState);
+    const { form }              = useFormAction({ values });
+
+    const handleAction = values?.id && values?.id > 0 ? updateLink : createLink;
+
+    const [state, formAction]   = useActionState<FormState, FormData>(handleAction, initialState);
 
     useEffect(() => {
-        if (state?.isSuccess === true) {
-            // Success logic
-            setLoading(false);
-            alert("Berhasil Submit Link Baru!");
-            onFinished?.();
-            form.reset();
-        }
+        if(!state.errors) {
+            if (state?.isSuccess === true) {
+                alert(state.message);
+                onFinished?.();
+                form.reset();
+            }
 
-        if (state?.isSuccess === false) {
+            if (state?.isSuccess === false) {
+                onFinished?.();
+                alert("Gagal Submit/Edit Link ... (Coba lagi yaa.. kadang Neon databasenya lemot)");
+                form.reset();
+            }
+        } {
             setLoading(false);
-            onFinished?.();
-            alert("Gagal Submit Link Baru...");
-            form.reset();
         }
     }, [state]);
 
     return (
         <>
             <Form {...form}>
-                <form action={formAction} className="space-y-8" onSubmit={() => setLoading(true)}>
+                <form action={formAction} className="space-y-8" onSubmit={() => {
+                    if(typeof setLoading === "function") {
+                        setLoading(true);
+                    }
+                }}>
+                    <FormField
+                    control={form.control}
+                    name="id"
+                    render={({ field }) => (
+                        <Input placeholder="ID ..." {...field} type="hidden"/>
+                    )}
+                    />
+
                     <FormField
                     control={form.control}
                     name="title"

@@ -14,7 +14,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+import {
+  Drawer,
+  DrawerContent
+} from "@/components/ui/drawer"
+
 import { useState } from "react"
+import FormContainer from "../FormContainer"
 
 type Link = {
     id: number
@@ -30,8 +36,25 @@ type dataLink = {
     data   : Link[];
 }
 
-export default function LinksContainer({ dataLinks: data, error: error, isLoading: isLoading, onFinished }: {dataLinks: dataLink; error: object; isLoading: boolean; onFinished: () => void}) {  
-    const[deletedId, setDeletedId] = useState<number | null>(null);
+export default function LinksContainer({ dataLinks: data, error: error, Loading, setLoading, isLoading: isLoading, onFinished }: {
+    dataLinks: dataLink; 
+    error: object;
+    Loading: boolean;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    isLoading: boolean; 
+    onFinished: () => void}) 
+{  
+    const [showEdit, setShowEdit]   = useState<boolean>(false);
+    const [deletedId, setDeletedId] = useState<number | null>(null);
+    const [valueEdit, setValueEdit] = useState<{
+        id?: number;
+        title?: string;
+        url?: string;
+    }>({
+        id   : 0,
+        title: '',
+        url  : '',
+    })
 
     const handleDelete = async (id: number) => {
         const response = await fetch(`/api/links/delete/${id}`, {
@@ -61,7 +84,14 @@ export default function LinksContainer({ dataLinks: data, error: error, isLoadin
                           <div className="action-wrapper flex gap-4 flex-col justify-start items-start">
                               <CardTitle>Actions</CardTitle>
                               <div className="buttons flex gap-3">
-                                  <Button size="sm" variant="default">Edit</Button>
+                                  <Button size="sm" variant="default" onClick={() => {
+                                    setValueEdit({
+                                        id: data.id,
+                                        title: data.title,
+                                        url: data.url
+                                    })
+                                    setShowEdit(true)
+                                  }}>Edit</Button>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button variant="default" size="sm" onClick={() => setDeletedId(data.id)}>Delete</Button>
@@ -71,7 +101,10 @@ export default function LinksContainer({ dataLinks: data, error: error, isLoadin
                                             <PopoverContent className="w-80">
                                                 <div className="grid flex flex-col items-center justify-center gap-4">
                                                     <p>Apakah anda yakin untuk delete link ini?</p>
-                                                    <Button variant="destructive" size="sm" onClick={() => handleDelete(data.id)}>Ya</Button>
+                                                    <Button variant="destructive" size="sm" onClick={() =>{
+                                                        setLoading(true);
+                                                        handleDelete(data.id)
+                                                    }}>Ya</Button>
                                                 </div>
                                             </PopoverContent>
                                         }
@@ -98,6 +131,27 @@ export default function LinksContainer({ dataLinks: data, error: error, isLoadin
               )
           }
         </div>
+
+        {/* DRAWER EDIT */}
+        <Drawer open={showEdit} onOpenChange={setShowEdit}>
+            <DrawerContent>
+                <div className="container mx-auto p-4">
+                    <FormContainer 
+                    setLoading={setLoading}
+                    values={{ 
+                        id: valueEdit.id as number,
+                        title: valueEdit.title as string,
+                        url: valueEdit.url as string,
+                    }}
+                    onFinished={
+                        () => {
+                            setShowEdit(false);
+                            onFinished();
+                        }
+                    }/>
+                </div>
+            </DrawerContent>
+        </Drawer>
       </>
     );
 }

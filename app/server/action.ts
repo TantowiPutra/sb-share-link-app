@@ -3,10 +3,12 @@
 import { z } from 'zod'
 import { linksTable } from "@/lib/db/schema"
 import { db } from "@/lib/db"
+import { sql,eq } from "drizzle-orm";
 
 type FormState = {
   message?: string;
   errors?: {
+    id? :string;
     title?: string;
     url?: string;
   };
@@ -20,14 +22,14 @@ type FieldErrors = {
 export async function createLink(
     prevState: {
         message?: string
-        errors?: object
+        data?: object
         isSuccess?: boolean | null
     },
     formData: FormData,
 ): Promise<FormState> {
     const formSchema = z.object({
         title: z.string().min(1, 'Title Wajib Diisi(Server Action)!'),
-        url : z.string().min(1, 'URL Wajib Diisi(Server Action)!'),
+        url  : z.string().min(1, 'URL Wajib Diisi(Server Action)!'),
     });
 
     const parse = formSchema.safeParse({
@@ -58,8 +60,6 @@ export async function createLink(
                              })
                              .returning({ insertedId: linksTable.id });
 
-        console.log(data);
-
         return {
             message: "Sukses Insert Data!",
             isSuccess: true,
@@ -68,31 +68,72 @@ export async function createLink(
         return {
             message: "Insert Gagal",
             isSuccess: false,
-            errors : error
+            data: {
+                title: "",
+                url: "",
+            }
         }
     }
 }
 
 export async function updateLink(
     prevState: {
-        message: string
-        errors: object
+        message?: string
+        errors?: object
+        isSuccess?: boolean | null
     },
     formData: FormData,
 ) {
     const formSchema = z.object({
-        
+        id: z.string().optional(),
+        title: z.string().min(1, 'Title Wajib Diisi(Server Action)!'),
+        url : z.string().min(1, 'URL Wajib Diisi(Server Action)!'),
     });
-}
 
-export async function deleteLink(
-    prevState: {
-        message: string
-        errors: object
-    },
-    formData: FormData,
-) {
-    const formSchema = z.object({
-        
-    });
+    const parse = formSchema.safeParse({
+        id   : formData.get('id'),
+        title: formData.get('title'),
+        url  : formData.get('url'),
+    })
+
+    if (!parse.success) {
+        const fieldErrors: FieldErrors = parse.error.formErrors.fieldErrors || {}
+
+        const errors = Object.keys(fieldErrors)?.reduce((acc, key) => {
+            acc[key] = fieldErrors[key]?.[0] || 'Unknown error'
+            return acc
+        }, {} as Record<string, string>)
+
+        console.log(errors)
+
+        return { 
+            errors : errors,
+            isSuccess: false
+        }
+    }
+
+    try {
+        const data = await db.update(linksTable)
+                             .set({
+                                title: parse.data.title,
+                                url  : parse.data.url,
+                                updated_at: sql`NOW()`
+                             })
+                             .where(eq(linksTable.id, Number(parse.data.id)))
+                             .returning({ updatedId: linksTable.id });
+
+        return {
+            message: "Sukses Update Data!",
+            isSuccess: true,
+        }
+    } catch(error) {
+        return {
+            message: "Insert Gagal",
+            isSuccess: false,
+            errors: {
+                title: "",
+                url: "",
+            }
+        }
+    }
 }

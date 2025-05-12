@@ -4,8 +4,9 @@ import { z } from "zod";
 import { useEffect } from "react";
 
 export const formSchema = z.object({
-    title: z.string().min(1),
-    url  : z.string().min(1)
+    id          : z.number().optional(),
+    title       : z.string().min(1),
+    url         : z.string().min(1)
 })
 
 export type formType = z.infer<typeof formSchema>;
@@ -14,6 +15,7 @@ export default function useFormAction({ values } : {values?: formType}) {
     const form = useForm<formType>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            id: 0,
             title: '',
             url: '',
         }

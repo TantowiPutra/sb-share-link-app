@@ -9,4 +9,7 @@ List of Dependencies:
 - Zustrand      : Global State Management
 
 Dependencies Usage:
-- SWR : Mainly used for Client-Side data fetching, allowing client-side to easily revalidate (mutation) links list after CRUD process. 
+- SWR : Mainly used for Client-Side data fetching, allowing client-side to easily revalidate (mutation) links list after CRUD process.
+
+<!-- Note -->
+- Terkadang halaman bisa gagal loading, dikarenakan Neon serverless PosgreSQL yang terkadang lemot :/

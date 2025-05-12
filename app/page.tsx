@@ -19,10 +19,15 @@ export default function Home() {
         refreshInterval: 10000
     });
 
+    const [Loading, setLoading] = useState<boolean>(false);
     const [showCreate, setShowCreate] = useState<boolean>(false);
 
     return (
         <>
+            <div className={`fixed inset-0 z-99 flex items-center justify-center bg-black/50 ${Loading ? '' : 'hidden'}`}>
+                <div className="w-16 h-16 border-4 border-t-transparent border-white rounded-full animate-spin" />
+            </div>
+            
             <div className="container mx-auto">
                 <div className="user-info flex items-center justify-between">
                     <h1 className="font-bold text-3xl">Hi, {`Tantowi`}</h1>
@@ -33,18 +38,23 @@ export default function Home() {
                     dataLinks={data}
                     error={error}
                     isLoading={isLoading}
+                    Loading={Loading}
+                    setLoading={setLoading}
                     onFinished = {() => {
                         mutate();
+                        setLoading(false);
                     }}
                 />
             </div>
 
+            {/* DRAWER CREATE */}
             <Drawer open={showCreate} onOpenChange={setShowCreate}>
                 <DrawerContent>
                     <div className="container mx-auto p-4">
-                        <FormContainer onFinished={
+                        <FormContainer Loading={Loading} setLoading={setLoading} onFinished={
                             () => {
                                 setShowCreate(false);
+                                setLoading(false);
                                 mutate();
                             }
                         }/>
