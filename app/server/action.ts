@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { linksTable } from "@/lib/db/schema"
 import { db } from "@/lib/db"
 import { sql,eq } from "drizzle-orm";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSession } from "next-auth";
 
 type FormState = {
   message?: string;
@@ -51,11 +53,25 @@ export async function createLink(
         }
     }
 
+    // KARENA APP ROUTER TIDAK MENERIMA PARAMETER REQUEST, MAKA GAK BSIA PAKAI getToken()
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return {
+            message: "Unauthorized",
+            isSuccess: false,
+            errors: {
+                title: parse!.data!.title,
+                url: parse!.data!.url,
+            }
+        };
+    }
+
     try {
         const data = await db.insert(linksTable)
                              .values({
                                 title: parse!.data!.title as string,
-                                email: "" as string,
+                                email: session!.user!.email as string,
                                 url  : parse!.data!.url as string
                              })
                              .returning({ insertedId: linksTable.id });
@@ -68,7 +84,7 @@ export async function createLink(
         return {
             message: "Insert Gagal",
             isSuccess: false,
-            data: {
+            errors: {
                 title: "",
                 url: "",
             }

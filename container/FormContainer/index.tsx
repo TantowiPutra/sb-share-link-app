@@ -129,7 +129,7 @@ export default function FormContainer({id, Loading, setLoading, values, onFinish
                     )}
                     />
 
-                    <Button type="submit" disabled={Loading}>{ Loading ? "Loading..." : "Submit" }</Button>
+                    <Button type="submit" disabled={Loading}>Submit</Button>
                 </form>
             </Form>
         </>

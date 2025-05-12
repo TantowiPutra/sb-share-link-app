@@ -5,19 +5,35 @@ import {
   DrawerContent
 } from "@/components/ui/drawer"
 
+import * as React from "react"
+import { useRouter } from "next/navigation"
+import { signOut, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import LinksContainer from "@/container/LinksContainer"
 import { useState } from "react"
 import FormContainer from "@/container/FormContainer/index"
-
+import SessionContainer from "@/container/SessionContainer"
 import useSWR from "swr"
 
 const fetcher = (...args: Parameters<typeof fetch>) => fetch(...args).then((res) => res.json());
 
-export default function Home() {
+export function Home() {
+    const { data: session, status } = useSession()
+    const router = useRouter()
+
     const { data, error, isLoading, mutate } = useSWR("/api/links", fetcher, {
         refreshInterval: 10000
     });
+
+    // LEMPAR KE HALAMAN LOGIN SAAT BELUM AUTHENTICATED
+    React.useEffect(() => {
+        if (status === "loading") return; 
+
+        if (status !== "authenticated") {
+            router.push("/login") 
+        }
+    }, [status, router])
+
 
     const [Loading, setLoading] = useState<boolean>(false);
     const [showCreate, setShowCreate] = useState<boolean>(false);
@@ -30,7 +46,13 @@ export default function Home() {
             
             <div className="container mx-auto">
                 <div className="user-info flex items-center justify-between">
-                    <h1 className="font-bold text-3xl">Hi, {`Tantowi`}</h1>
+                    <div className="flex gap-4 items-center justify-center">
+                        <div className="flex flex-col">
+                            <h1 className="font-bold text-3xl">Hi, {`${session?.user?.name || 'Username'}`}</h1>
+                            <p>Email: {`${session?.user?.email || "Email"}`}</p>
+                        </div>
+                        <Button onClick={() => signOut()}>Sign Out</Button>
+                    </div>
                     <Button onClick={() => setShowCreate(true)}>+ Add Link</Button>
                 </div>
 
@@ -64,3 +86,12 @@ export default function Home() {
         </>
     );
 }
+
+export default function HomePage() {
+  return (
+    <SessionContainer>
+      <Home />
+    </SessionContainer>
+  )
+}
+
